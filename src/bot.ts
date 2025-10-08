@@ -48,6 +48,7 @@ const client = new Client({
 
 (client as any).commands = new Collection();
 (client as any).textCommands = new Collection();
+(client as any).cooldowns = new Collection();
 
 const handler = join(__dirname, './handlers');
 readdirSync(handler).forEach(file => {
