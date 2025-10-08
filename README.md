@@ -1,4 +1,4 @@
-# Karusa Project
+# Beta Project
 
 ## Description / Description
 
@@ -211,41 +211,3 @@ discord-bot-starter-js/
       "message": "Hello, world! (ceci est un message de test)"
     }
     ```
-
-**EN :**
-
-* **Discord Commands**:
-
-  * Public commands like `/ping` to test latency.
-  * Private commands specific to a server, like `/ping-guild`.
-  * Interactions: buttons, select menus, and modals.
-
-* **REST API**:
-
-  * URL: `http://localhost:3000/`
-  * Available routes: `/user`, `/user/:id`, `/guild`, `/guild/:id`.
-
-* **WebSocket**:
-
-  * URL: `ws://localhost:3000/websocket`
-  * Example JSON message:
-
-    ```json
-    {
-      "guild": "1234idguild",
-      "channel": "1234idchannel",
-      "message": "Hello, world! (this is a test message)"
-    }
-    ```
-
-## Contribution
-
-**FR :** Les contributions sont les bienvenues ! Soumettez une pull request ou ouvrez une issue pour signaler des bugs ou proposer des améliorations.
-
-**EN :** Contributions are welcome! Please submit a pull request or open an issue to report bugs or suggest improvements.
-
-## Licence / License
-
-**FR :** Ce projet est sous licence [MIT](https://opensource.org/licenses/MIT).
-
-**EN :** This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
