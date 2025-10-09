@@ -11,8 +11,7 @@ export default {
     const picked = Number(interaction.values[0]);
     if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
     try {
-  // Acknowledge the component without creating a new ephemeral reply
-  await interaction.deferUpdate().catch(() => null);
+      await interaction.deferReply({ ephemeral: true }).catch(() => null);
       await deleteTask(slug, picked);
       // Update embed
       if (channelId && messageId) {

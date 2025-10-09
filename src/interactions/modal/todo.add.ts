@@ -11,8 +11,7 @@ export default {
     const title = interaction.fields.getTextInputValue('task_title').trim();
     if (!slug || !title) return interaction.reply({ content: 'Données manquantes.', flags: MessageFlags.Ephemeral });
     try {
-  // Avoid deprecated ephemeral option; we won't show any confirmation anyway
-  // For modals, we can delay by editing/cleaning later without a visible reply
+      await interaction.deferReply({ ephemeral: true }).catch(() => null);
       const id = await addTask(slug, title);
       // Update the original embed message if we have context
       if (channelId && messageId) {

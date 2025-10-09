@@ -51,7 +51,7 @@ export default {
       const title = interaction.fields.getTextInputValue('task_title').trim();
       if (!slug || !title) return interaction.reply({ content: 'Données manquantes.', flags: MessageFlags.Ephemeral });
       try {
-  // No ephemeral reply needed; we'll update the main message and not send confirmations
+        await interaction.deferReply({ ephemeral: true }).catch(() => null);
         const id = await addTask(slug, title);
 
         if (channelId && messageId) {
