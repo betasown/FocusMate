@@ -48,14 +48,14 @@ module.exports = (client: Client) => {
 
       const selectMenu = client.selectMenus.get(menuId);
       if (!selectMenu) {
-        return interaction.reply({ content: 'Select menu not found.', ephemeral: true });
+  return interaction.reply({ content: 'Select menu not found.', flags: MessageFlags.Ephemeral });
       }
 
       try {
         await selectMenu.execute(interaction, params);
       } catch (error) {
         console.error(`Error while executing the select menu ${customId}:`, error);
-        await interaction.reply({ content: 'An error occurred while executing this select menu.', ephemeral: true });
+  await interaction.reply({ content: 'An error occurred while executing this select menu.', flags: MessageFlags.Ephemeral });
       }
     }
   });

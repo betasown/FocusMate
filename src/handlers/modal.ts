@@ -41,14 +41,14 @@ module.exports = (client: Client) => {
 
     const modal = client.modals.get(modalId);
     if (!modal) {
-      return interaction.reply({ content: 'Modal not found.', ephemeral: true });
+      return interaction.reply({ content: 'Modal not found.', flags: MessageFlags.Ephemeral });
     }
 
     try {
       await modal.execute(interaction, params);
     } catch (error) {
       console.error(`Error while executing the modal ${customId}:`, error);
-      await interaction.reply({ content: 'An error occurred while executing this modal.', ephemeral: true });
+  await interaction.reply({ content: 'An error occurred while executing this modal.', flags: MessageFlags.Ephemeral });
     }
   });
 };

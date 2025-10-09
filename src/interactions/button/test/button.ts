@@ -7,7 +7,7 @@ export default {
     const customId = interaction.customId;
     const parts = customId.split(':');
     if (parts.length < 2) {
-      await interaction.reply({ content: 'Invalid customId format.', ephemeral: true });
+      await interaction.reply({ content: 'Invalid customId format.', flags: MessageFlags.Ephemeral });
       return;
     }
   

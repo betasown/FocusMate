@@ -1,4 +1,4 @@
-import { Events, Collection, type Interaction, type ChatInputCommandInteraction, type Collection as DjsCollection } from 'discord.js';
+import { Events, Collection, MessageFlags, type Interaction, type ChatInputCommandInteraction, type Collection as DjsCollection } from 'discord.js';
 
 type Command = {
     data: { name: string; toJSON?: () => unknown };
@@ -47,7 +47,7 @@ export default {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
                 return interaction.reply({
                     content: `Deux petites secondes, j'ai besoin de me recharger pour refaire : \`${command.data.name}\`. Je suis prêt dans <t:${expiredTimestamp}:R>.`,
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
             }
         }
@@ -60,9 +60,9 @@ export default {
         } catch (error) {
             console.error(error);
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+                await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
             } else {
-                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+                await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
             }
         }
     },

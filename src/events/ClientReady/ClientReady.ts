@@ -3,6 +3,7 @@ import { Client, Events, ActivityType } from 'discord.js';
 import { Mongoose } from 'mongoose';
 import websocketRouter, { websocketHandler } from '../../api/routes/websocket';
 import app from '../../api';
+import { initDbFromEnv, testConnection } from '../../services/db';
 
 const mongoose: Mongoose = require('mongoose');
 
@@ -34,19 +35,6 @@ export default {
     );
 
     mongoose.set("strictQuery", true);
-    mongoose.connect(process.env.mongo as string)
-      .then(() => {
-        console.log(
-          "%c✔️  MongoDB connected",
-          "color:#0a0; font-size:12px;"
-        );
-      })
-      .catch((err: Error) => {
-        console.error(
-          "%c❌  MongoDB connection error: " + err,
-          "color:#a00; font-size:12px;"
-        );
-      });
 
     const server = app.listen(PORT, () => {
       console.log(`%c🌐  Server started on port http://localhost:${PORT}`, "color:#888; font-size:12px;");
@@ -82,11 +70,19 @@ export default {
       "color:#0a0; font-style:italic; font-size:13px;"
     );
 
+    // Initialize DB connection if env provided
+    const pool = initDbFromEnv();
+    if (pool) {
+      const ok = await testConnection();
+      if (ok) console.log('✅  Connected to MariaDB');
+      else console.error('❌  Could not connect to MariaDB');
+    }
+
     client.user?.setPresence({
       status: "dnd",
       activities: [
         {
-          name: "Beta Bot",
+          name: "le Focus Mode",
           type: ActivityType.Streaming,
           url: "https://www.pornhub.com"
         }
