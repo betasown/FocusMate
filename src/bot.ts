@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { readdirSync } from 'fs';
+import './routine';
 
 dotenv.config()
 
