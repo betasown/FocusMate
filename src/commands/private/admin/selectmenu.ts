@@ -3,7 +3,7 @@ import { SlashCommandBuilder, ActionRowBuilder, StringSelectMenuBuilder, RoleSel
 export const command = {
   data: new SlashCommandBuilder()
     .setName('sendselectmenu')
-    .setDescription('Sends a message with an interactive select menu'),
+    .setDescription('Envoie un message avec un menu de sélection interactif'),
 
   execute: async (interaction: any) => {
     const selectMenu = new StringSelectMenuBuilder()
@@ -38,7 +38,7 @@ export const command = {
     const row_mentionable = new ActionRowBuilder<MentionableSelectMenuBuilder>().addComponents(mentionableSelectMenu);
 
     await interaction.reply({
-      content: 'Here is an interactive select menu:',
+      content: 'Voici un menu de sélection interactif :',
       components: [row_string, row_role, row_channel, row_user, row_mentionable],
     });
   },

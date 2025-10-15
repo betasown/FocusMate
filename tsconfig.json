@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
+    "rootDir": "src",
     "outDir": "dist",
     "esModuleInterop": true,
     "strict": true,
@@ -12,5 +13,6 @@
       "./node_modules/@types",
       "./src/types"
     ]
-  }
+  },
+  "exclude": ["test-calendar.ts", "test-week-calendar.ts", "node_modules", "dist"]
 }

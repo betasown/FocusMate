@@ -1,5 +1,5 @@
 import { Client, Message } from 'discord.js';
-import { readdirSync } from 'fs';
+import { promises as fsPromises } from 'fs';
 import { join } from 'path';
 
 declare module 'discord.js' {
@@ -8,18 +8,24 @@ declare module 'discord.js' {
   }
 }
 
-const loadTextCommands = (client: Client, directory: string) => {
-  const files = readdirSync(directory, { withFileTypes: true });
+const loadTextCommands = async (client: Client, directory: string) => {
+  const files = await fsPromises.readdir(directory, { withFileTypes: true });
 
   for (const file of files) {
-    const path = join(directory, file.name);
+    const filePath = join(directory, file.name);
 
     if (file.isDirectory()) {
-      loadTextCommands(client, path); 
-    } else if (file.name.endsWith('.js')) {
-      const command = require(path);
-      client.textCommands.set(command.name, command);
-      console.log(`Text command ${command.name} loaded!`);
+      await loadTextCommands(client, filePath);
+    } else if (file.name.endsWith('.js') || file.name.endsWith('.ts')) {
+      try {
+        const mod = await import(filePath);
+        const command = mod.default || mod;
+        if (!command || !command.name) continue;
+        client.textCommands.set(command.name, command);
+        console.log(`Text command ${command.name} loaded!`);
+      } catch (err) {
+        console.error(`Failed to load text command at ${filePath}:`, err);
+      }
     }
   }
 };
@@ -28,7 +34,8 @@ module.exports = (client: Client) => {
   client.textCommands = new Map();
 
   const commandsDir = join(__dirname, '../commands/message');
-  loadTextCommands(client, commandsDir);
+  // kick off loading but don't block the rest (still async internal)
+  loadTextCommands(client, commandsDir).catch(err => console.error('Failed to load text commands:', err));
 
   client.on('messageCreate', async (message: Message) => {
     if (message.author.bot || !message.guild) return;

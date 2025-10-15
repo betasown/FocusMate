@@ -1,5 +1,5 @@
 import { Client, Interaction, MessageFlags } from 'discord.js';
-import { readdirSync } from 'fs';
+import { promises as fsPromises } from 'fs';
 import { join } from 'path';
 
 declare module 'discord.js' {
@@ -8,23 +8,29 @@ declare module 'discord.js' {
   }
 }
 
-const loadButtons = (client: Client, directory: string) => {
-  const files = readdirSync(directory, { withFileTypes: true });
+const loadButtons = async (client: Client, directory: string) => {
+  const files = await fsPromises.readdir(directory, { withFileTypes: true });
 
   for (const file of files) {
-    const path = join(directory, file.name);
+    const filePath = join(directory, file.name);
 
     if (file.isDirectory()) {
-      loadButtons(client, path); 
-    } else if (file.name.endsWith('.js')) {
-      const button = require(path).default;
+      await loadButtons(client, filePath);
+    } else if (file.name.endsWith('.js') || file.name.endsWith('.ts')) {
+      try {
+        const mod = await import(filePath);
+        const button = mod.default || mod;
 
-      if (!button.id || !button.execute) {
-        console.warn(`The file ${file.name} does not have an ID or an execute method.`);
-        continue;
+        if (!button.id || !button.execute) {
+          console.warn(`The file ${file.name} does not have an ID or an execute method.`);
+          continue;
+        }
+
+        client.buttons.set(button.id, button);
+        console.log(`Button ${button.id} loaded!`);
+      } catch (err) {
+        console.error(`Failed to load button at ${filePath}:`, err);
       }
-
-      client.buttons.set(button.id, button);
     }
   }
 };
@@ -32,7 +38,7 @@ const loadButtons = (client: Client, directory: string) => {
 module.exports = (client: Client) => {
   client.buttons = new Map();
   const buttonsDir = join(__dirname, '../interactions/button');
-  loadButtons(client, buttonsDir);
+  loadButtons(client, buttonsDir).catch(err => console.error('Failed to load buttons:', err));
 
   client.on('interactionCreate', async (interaction: Interaction) => {
     if (!interaction.isButton()) return;

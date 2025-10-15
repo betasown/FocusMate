@@ -1,21 +1,25 @@
 import { Client } from 'discord.js';
-import { readdirSync } from 'fs';
+import { promises as fsPromises } from 'fs';
 import { join } from 'path';
 
-const loadEvents = (client: Client, directory: string) => {
-  const files = readdirSync(directory, { withFileTypes: true });
+const loadEvents = async (client: Client, directory: string) => {
+  const files = await fsPromises.readdir(directory, { withFileTypes: true });
 
   for (const file of files) {
-    const path = join(directory, file.name);
+    const filePath = join(directory, file.name);
 
     if (file.isDirectory()) {
-      loadEvents(client, path);  
-    } else if (file.name.endsWith('.js')) {
-      const event = require(path).default;
-    
-      event.once
-      ? client.once(event.name, (...args: any[]) => event.execute(...args)) 
-      : client.on(event.name, (...args: any[]) => event.execute(...args));
+      await loadEvents(client, filePath);
+    } else if (file.name.endsWith('.js') || file.name.endsWith('.ts')) {
+      try {
+        const mod = await import(filePath);
+        const event = mod.default || mod;
+        event.once
+          ? client.once(event.name, (...args: any[]) => event.execute(...args))
+          : client.on(event.name, (...args: any[]) => event.execute(...args));
+      } catch (err) {
+        console.error(`Failed to load event at ${filePath}:`, err);
+      }
     }
   }
 };
@@ -23,5 +27,5 @@ const loadEvents = (client: Client, directory: string) => {
 module.exports = (client: Client) => {
   client.setMaxListeners(20); 
   const eventsDir = join(__dirname, '../events');
-  loadEvents(client, eventsDir);
+  loadEvents(client, eventsDir).catch(err => console.error('Failed to load events:', err));
 };

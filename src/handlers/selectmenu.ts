@@ -1,5 +1,5 @@
 import { Client, Interaction, MessageFlags } from 'discord.js';
-import { readdirSync } from 'fs';
+import { promises as fsPromises } from 'fs';
 import { join } from 'path';
 
 declare module 'discord.js' {
@@ -8,23 +8,29 @@ declare module 'discord.js' {
   }
 }
 
-const loadSelectMenus = (client: Client, directory: string) => {
-  const files = readdirSync(directory, { withFileTypes: true });
+const loadSelectMenus = async (client: Client, directory: string) => {
+  const files = await fsPromises.readdir(directory, { withFileTypes: true });
 
   for (const file of files) {
-    const path = join(directory, file.name);
+    const filePath = join(directory, file.name);
 
     if (file.isDirectory()) {
-      loadSelectMenus(client, path); 
-    } else if (file.name.endsWith('.js')) {
-      const selectMenu = require(path).default;
+      await loadSelectMenus(client, filePath);
+    } else if (file.name.endsWith('.js') || file.name.endsWith('.ts')) {
+      try {
+        const mod = await import(filePath);
+        const selectMenu = mod.default || mod;
 
-      if (!selectMenu.id || !selectMenu.execute) {
-        console.warn(`The file ${file.name} does not have an ID or an execute method.`);
-        continue;
+        if (!selectMenu.id || !selectMenu.execute) {
+          console.warn(`The file ${file.name} does not have an ID or an execute method.`);
+          continue;
+        }
+
+        client.selectMenus.set(selectMenu.id, selectMenu);
+        console.log(`SelectMenu ${selectMenu.id} loaded!`);
+      } catch (err) {
+        console.error(`Failed to load selectmenu at ${filePath}:`, err);
       }
-
-      client.selectMenus.set(selectMenu.id, selectMenu); 
     }
   }
 };
@@ -32,7 +38,7 @@ const loadSelectMenus = (client: Client, directory: string) => {
 module.exports = (client: Client) => {
   client.selectMenus = new Map(); 
   const selectMenusDir = join(__dirname, '../interactions/selectmenu');
-  loadSelectMenus(client, selectMenusDir);
+  loadSelectMenus(client, selectMenusDir).catch(err => console.error('Failed to load select menus:', err));
 
   client.on('interactionCreate', async (interaction: Interaction) => {
     if (

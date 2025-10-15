@@ -3,7 +3,7 @@ import { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } fro
 export const command = {
   data: new SlashCommandBuilder()
     .setName('sendbutton')
-    .setDescription('Sends a message with an interactive button'),
+    .setDescription('Envoie un message avec un bouton interactif'),
 
   execute: async (interaction: any) => {
     const button = new ButtonBuilder()
@@ -14,7 +14,7 @@ export const command = {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
 
     await interaction.reply({
-      content: 'Here is an interactive button:',
+      content: 'Voici un bouton interactif :',
       components: [row],
     });
   },

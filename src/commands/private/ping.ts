@@ -3,7 +3,7 @@ import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from 'discord.j
 export const command = {
   data: new SlashCommandBuilder()
     .setName('ping-guild')
-    .setDescription('Calculates the bot latency'),
+    .setDescription('Calcule la latence du bot'),
 
   async execute(interaction: CommandInteraction) {
 
@@ -12,7 +12,7 @@ export const command = {
     await interaction.reply({
       embeds: [
         new EmbedBuilder()
-          .setDescription(`🏓 Pong! ${latency}ms `)
+          .setDescription(`🏓 Pong ! ${latency}ms `)
       ]
     });
   },

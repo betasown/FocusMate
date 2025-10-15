@@ -9,16 +9,16 @@ import {
 export const command = {
   data: new SlashCommandBuilder()
     .setName('sendmodal')
-    .setDescription('Sends an interactive modal'),
+    .setDescription('Envoie une fenêtre modale interactive'),
 
   execute: async (interaction: any) => {
     const modal = new ModalBuilder()
       .setCustomId('example:param1') 
-      .setTitle('Example Modal');
+      .setTitle('Exemple de modal');
 
     const input1 = new TextInputBuilder()
       .setCustomId('input1') 
-      .setLabel('Enter a value')
+      .setLabel('Entrez une valeur')
       .setStyle(TextInputStyle.Short);
 
     const row = new ActionRowBuilder<TextInputBuilder>().addComponents(input1);

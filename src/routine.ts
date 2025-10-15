@@ -1,7 +1,7 @@
 import client from './bot';
 import cron from 'node-cron';
 import { ChannelType, TextChannel } from 'discord.js';
-import { getEdtEmbed } from './commands/public/edt';
+import { getEdtEmbed } from './commands/private/edt-fast';
 
 const CRON_SCHEDULE = (process.env.EDT_CRON || '30 7 * * 1-5').trim();
 const CHANNEL_ID = process.env.EDT_CHANNEL_ID || '1404440454967328909';

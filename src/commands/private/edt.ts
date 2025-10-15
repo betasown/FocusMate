@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, EmbedBuilder, type ChatInputCommandInteraction, type APIEmbedField } from 'discord.js';
+import { SlashCommandBuilder, AttachmentBuilder, type ChatInputCommandInteraction } from 'discord.js';
 import ical, { type ReturnObject } from 'node-ical';
+import type { Homework } from '../../services/homeworkMariaDb';
 
 type EventLike = {
     start: Date;
@@ -62,37 +63,64 @@ export const command = {
             return interaction.editReply({ content: 'Impossible de récupérer les évènements !' });
         }
 
-        // Récupérer les évènements du jour demandé
+        // Récupérer les évènements de la semaine contenant la date demandée (lundi..dimanche)
+        const getMonday = (d: Date) => {
+            const dd = new Date(d);
+            const day = dd.getDay();
+            const diff = dd.getDate() - day + (day === 0 ? -6 : 1);
+            dd.setDate(diff);
+            dd.setHours(0,0,0,0);
+            return dd;
+        };
+
+        const monday = getMonday(date);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23,59,59,999);
+
         let events = (Object.values(webEvents) as any[]).filter((event: any) => {
             if (!event?.start) return false;
-            const eventDate = new Date(event.start);
-            return datesAreOnSameDay(eventDate, date);
+            const evStart = new Date(event.start);
+            const evEnd = event.end ? new Date(event.end) : evStart;
+            // inclure si l'événement intersecte la période [monday, sunday]
+            return evEnd >= monday && evStart <= sunday;
         }) as EventLike[];
 
         if (!events.length) {
-            return interaction.editReply({ content: `Aucun évènement trouvé pour le ${date.toLocaleDateString('fr-FR')} !` });
+            return interaction.editReply({ content: `Aucun évènement trouvé pour la semaine du ${monday.toLocaleDateString('fr-FR')} !` });
         }
 
         // Trier les évènements par date de début
         events = events.sort((a, b) => +new Date(a.start) - +new Date(b.start));
 
-        // Générer des parties de l'embed avec chaque évènement
-        const fields: APIEmbedField[] = [];
-        events.forEach(event => {
-            const locationPart = event.location ? ` | Salle ${event.location}` : '';
-            fields.push({
-                name: event.summary,
-                value: `De ${new Date(event.start).toLocaleTimeString('fr-FR', dateOptions)} à ${new Date(event.end).toLocaleTimeString('fr-FR', dateOptions)} ${dateDiff(new Date(event.start), new Date(event.end))}${locationPart}`,
-            });
-        });
+        // Mapper les évènements iCal vers un format compatible pour le générateur d'image
+        const mapped: Homework[] = events.map((ev, idx) => ({
+            id: idx,
+            title: ev.summary || 'Évènement',
+            subject: ev.location || 'Évènement',
+            dueDate: new Date(ev.start),
+            endDate: ev.end ? new Date(ev.end) : undefined,
+            description: ev.location || undefined,
+            createdBy: 'calendar',
+            createdByName: 'calendar',
+            guildId: interaction.guildId || '',
+            completed: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }));
 
-        // Créer un embed et l'envoyer
-        const embed = new EmbedBuilder()
-            .setTitle(`Évènements du ${date.toLocaleDateString('fr-FR')}`)
-            .setColor('#ffffff')
-            .setTimestamp()
-            .addFields(fields);
+        try {
+            // Import dynamique du générateur d'images
+            const { generateWeekCalendarImage } = await import('../../function/bot/CalendarGenerator');
 
-        return interaction.editReply({ embeds: [embed] });
+            // On génère l'image de la semaine (on passe le lundi pour être explicite)
+            const imageBuffer = await generateWeekCalendarImage(monday, mapped, { weekdaysOnly: true });
+            const attachment = new AttachmentBuilder(imageBuffer, { name: `edt-${date.toISOString().slice(0,10)}.png` });
+
+            return interaction.editReply({ files: [attachment] });
+        } catch (err) {
+            console.error('Erreur lors de la génération de l\'image EDT:', err);
+            return interaction.editReply({ content: '❌ Impossible de générer l\'image de l\'emploi du temps.' });
+        }
     },
 };
