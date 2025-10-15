@@ -32,6 +32,7 @@ export const command = {
         ),
 
     async execute(interaction: ChatInputCommandInteraction) {
+        // Réponse publique : tout le monde voit le même agenda
         await interaction.deferReply();
 
         try {
@@ -68,28 +69,18 @@ export const command = {
                 sunday.setDate(monday.getDate() + 6);
                 sunday.setHours(23, 59, 59, 999);
 
-                // Récupérer tous les devoirs de la période
-                const allHomeworks = await HomeworkService.getHomeworksByGuild(
-                    interaction.guildId,
-                    includeCompleted
-                );
+                    // Récupérer tous les devoirs du serveur
+                    const allHomeworks = await HomeworkService.getHomeworksByGuild(
+                        interaction.guildId,
+                        includeCompleted
+                    );
 
-                console.log(`📊 [DEBUG] Total devoirs dans la base : ${allHomeworks.length}`);
-                console.log(`📅 [DEBUG] Période recherchée : ${monday.toLocaleDateString('fr-FR')} au ${sunday.toLocaleDateString('fr-FR')}`);
-
-                // Filtrer les devoirs de cette semaine
-                homeworks = allHomeworks.filter(hw => {
-                    const hwDate = new Date(hw.dueDate);
-                    const isInWeek = hwDate >= monday && hwDate <= sunday;
-                    
-                    if (allHomeworks.length > 0) {
-                        console.log(`🔍 [DEBUG] Devoir "${hw.title}" le ${hwDate.toLocaleDateString('fr-FR')} ${hwDate.toLocaleTimeString('fr-FR')} -> ${isInWeek ? '✓ INCLUS' : '✗ EXCLU'}`);
-                    }
-                    
-                    return isInWeek;
-                });
-
-                console.log(`✅ [DEBUG] Devoirs filtrés pour cette semaine : ${homeworks.length}`);
+                    // Filtrer les devoirs de cette semaine (tous les devoirs du serveur)
+                    homeworks = allHomeworks.filter(hw => {
+                        const hwDate = new Date(hw.dueDate);
+                        const isInWeek = hwDate >= monday && hwDate <= sunday;
+                        return isInWeek;
+                    });
 
                 // Générer l'image
                 // G\u00e9n\u00e9rer l'image (import dynamique pour retarder le chargement du module natif)
