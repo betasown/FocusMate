@@ -133,7 +133,8 @@ export async function generateWeekCalendarImage(
     const padding = 40;
     const headerHeight = 80;
     const calendarWidth = width - padding * 2;
-    const calendarHeight = height - headerHeight - 100;
+    // Remove reserved legend area: use full remaining height below header
+    const calendarHeight = height - headerHeight - 40;
 
     const weekdaysOnly = options?.weekdaysOnly === true;
     // Organiser les devoirs par jour de la semaine
@@ -329,30 +330,7 @@ export async function generateWeekCalendarImage(
         }
     }
 
-    // Légende en bas
-    const legendY = height - 40;
-    ctx.font = 'bold 14px Arial';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'left';
-    ctx.fillText('Légende:', padding, legendY);
-
-    // Récupérer toutes les matières uniques
-    const uniqueSubjects = [...new Set(homeworks.map(hw => hw.subject))];
-    let legendX = padding + 80;
-
-    uniqueSubjects.slice(0, 10).forEach(subject => {
-        const color = getSubjectColor(subject);
-        
-        // Rectangle de couleur
-        ctx.fillStyle = color;
-        ctx.fillRect(legendX, legendY - 12, 15, 15);
-        
-        // Nom de la matière
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(subject, legendX + 20, legendY);
-        
-        legendX += ctx.measureText(subject).width + 50;
-    });
+    // Legends removed by user request — no legend rendering
 
     return canvas.toBuffer('image/png');
 }
@@ -384,7 +362,8 @@ export async function generateCalendarImage(
     // Grille du calendrier
     const padding = 40;
     const calendarWidth = width - padding * 2;
-    const calendarHeight = height - 150;
+    // Remove reserved legend area: use full remaining height for the month grid
+    const calendarHeight = height - 110;
     const cellWidth = calendarWidth / 7;
     const cellHeight = calendarHeight / 6;
 
@@ -480,30 +459,7 @@ export async function generateCalendarImage(
         if (currentDay > daysInMonth) break;
     }
 
-    // Légende des matières en bas
-    const legendY = height - 50;
-    ctx.font = 'bold 14px Arial';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'left';
-    ctx.fillText('Légende:', padding, legendY);
-
-    // Récupérer toutes les matières uniques
-    const uniqueSubjects = [...new Set(homeworks.map(hw => hw.subject))];
-    let legendX = padding + 80;
-
-    uniqueSubjects.slice(0, 8).forEach(subject => { // Limiter à 8 matières
-        const color = getSubjectColor(subject);
-        
-        // Rectangle de couleur
-        ctx.fillStyle = color;
-        ctx.fillRect(legendX, legendY - 12, 15, 15);
-        
-        // Nom de la matière
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(subject, legendX + 20, legendY);
-        
-        legendX += ctx.measureText(subject).width + 50;
-    });
+    // Legends removed by user request — no legend rendering for monthly view
 
     // Retourner le buffer de l'image
     return canvas.toBuffer('image/png');
