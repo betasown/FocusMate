@@ -8,7 +8,7 @@ export default {
     const channelId = parts[3] ?? interaction.channelId;
     const messageId = parts[4] ?? interaction.message.id;
     const picked = interaction.values[0];
-    if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
+  if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
 
     // Create state menu bound to chosen task id
     const stateMenu = new StringSelectMenuBuilder()

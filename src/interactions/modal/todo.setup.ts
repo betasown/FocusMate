@@ -39,7 +39,7 @@ export default {
 
       await reply.edit({ components: [rowWithIds] });
     } catch (err: any) {
-      await interaction.reply({ content: `Erreur: ${err?.message ?? String(err)}`, flags: MessageFlags.Ephemeral });
+  await interaction.reply({ content: `Erreur: ${err?.message ?? String(err)}`, flags: MessageFlags.Ephemeral });
     }
   },
 };

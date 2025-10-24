@@ -10,8 +10,8 @@ export default {
     const messageId = parts[4];
     const picked = Number(interaction.values[0]);
     if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
-    try {
-      await interaction.deferReply({ ephemeral: true }).catch(() => null);
+  try {
+    await interaction.deferReply({ ephemeral: true }).catch(() => null);
       await deleteTask(slug, picked);
       // Update embed
       if (channelId && messageId) {

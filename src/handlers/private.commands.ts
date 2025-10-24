@@ -39,51 +39,67 @@ const loadCommands = async (client: Client, directory: string, body: any[]) => {
   }
 };
 
-module.exports = async (client: Client) => {
-  const body: object[] = [];
+// Handler: load AND register commands
+export default async (client: Client) => {
+  const body: any[] = [];
   const commandsDir = join(__dirname, '../commands/private');
   const token = process.env.token || ''; 
   const clientid = process.env.client || '';
   const guildid = process.env.guild || '';
 
+  // Load all commands into memory
   await loadCommands(client, commandsDir, body);
+  console.log(`✅ Loaded ${body.length} private command(s) into memory`);
 
-  console.log(`Found ${body.length} private command(s) to register for guild ${guildid}`);
+  // Provide a clearer message about missing env vars (without printing the token)
+  const missing: string[] = [];
+  if (!token) missing.push('token');
+  if (!clientid) missing.push('client');
+  if (!guildid) missing.push('guild');
 
-  if (!token || !clientid || !guildid) {
-    console.warn('Missing token/client/guild env vars; skipping private commands registration.');
+  if (missing.length > 0) {
+    console.warn(`⚠️ Missing environment variable(s): ${missing.join(', ')}. Skipping Discord registration of private commands.`);
+    console.warn('   - Ensure you have a `.env` file with: token, client, guild');
+    return;
+  }
+
+  if (body.length === 0) {
+    console.log('No private commands to register.');
     return;
   }
 
   // Deduplicate commands by name
   const uniqueByName = new Map<string, any>();
-  for (const cmdEntry of body as any[]) {
+  for (const cmdEntry of body) {
     const name = cmdEntry.name || `unnamed-${Math.random()}`;
     if (!uniqueByName.has(name)) uniqueByName.set(name, cmdEntry);
   }
 
-  // Convert to array and sort: admin commands first, then alphabetical by name
+  // Sort: admin commands first, then alphabetical by name
   const uniqueEntries = Array.from(uniqueByName.values()).sort((a, b) => {
     if (a.isAdmin === b.isAdmin) return a.name.localeCompare(b.name);
     return a.isAdmin ? -1 : 1;
   });
 
   const uniqueBody = uniqueEntries.map(e => e.payload);
-  console.log(`Registering ${uniqueBody.length} unique private command(s) to guild ${guildid}`);
 
   const rest = new REST({ version: '10' }).setToken(token);
 
   try {
+    console.log(`📤 Registering ${uniqueBody.length} private command(s) to guild ${guildid}...`);
     await rest.put(Routes.applicationGuildCommands(clientid, guildid), { body: uniqueBody });
-  } catch (error) {
-    console.error('Bulk registration failed, will try per-command registration. Error:', error);
-    // Fallback: try registering commands individually to identify problematic ones
-    for (const cmd of uniqueBody as any[]) {
+    console.log(`✅ Successfully registered ${uniqueBody.length} private commands!`);
+  } catch (error: any) {
+    console.error('❌ Bulk registration failed:', error.message);
+    console.log('Trying per-command registration...');
+    
+    // Fallback: try registering commands individually
+    for (const cmd of uniqueBody) {
       try {
         await rest.post(Routes.applicationGuildCommands(clientid, guildid), { body: cmd });
-        console.log(`✅ Registered command '${cmd.name}'`);
-      } catch (errCmd) {
-        console.error(`Failed to register command '${cmd.name}':`, errCmd);
+        console.log(`  ✅ ${cmd.name}`);
+      } catch (errCmd: any) {
+        console.error(`  ❌ ${cmd.name}: ${errCmd.message}`);
       }
     }
   }

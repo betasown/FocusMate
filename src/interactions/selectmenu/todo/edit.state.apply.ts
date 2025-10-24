@@ -10,7 +10,7 @@ export default {
   const channelId = parts[4];
   const messageId = parts[5];
   const state = interaction.values[0] as TaskState;
-    if (!slug || !id || !state) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
+  if (!slug || !id || !state) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
     try {
       await updateTaskState(slug, id, state);
 
@@ -39,7 +39,7 @@ export default {
   await interaction.deleteReply().catch(() => null);
     } catch (e: any) {
       // Fallback error shown privately
-      await interaction.reply({ content: `Erreur: ${e?.message ?? String(e)}`, flags: MessageFlags.Ephemeral }).catch(() => null);
+  await interaction.reply({ content: `Erreur: ${e?.message ?? String(e)}` }).catch(() => null);
     }
   }
 }

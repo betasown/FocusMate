@@ -42,7 +42,20 @@ module.exports = async (client: Client) => {
   const clientid = process.env.client || '';
   const guildid = process.env.guild || '';
 
+  // Check if public commands directory exists
+  try {
+    await fsPromises.access(commandsDir);
+  } catch (err) {
+    console.log('No public commands directory found, skipping public commands registration.');
+    return;
+  }
+
   await loadCommands(client, commandsDir, body);
+
+  if (body.length === 0) {
+    console.log('No public commands found, skipping registration.');
+    return;
+  }
 
   // Deduplicate commands by name
   const uniqueByName = new Map<string, any>();
@@ -62,6 +75,18 @@ module.exports = async (client: Client) => {
   const rest = new REST({ version: '10' }).setToken(token);
 
   try {
+    // Check for missing env vars and log clearly
+    const missing: string[] = [];
+    if (!token) missing.push('token');
+    if (!clientid) missing.push('client');
+    if (!guildid) missing.push('guild');
+
+    if (missing.length > 0) {
+      console.warn(`⚠️ Missing environment variable(s): ${missing.join(', ')}. Skipping Discord registration of public commands.`);
+      console.warn('   - Ensure you have a `.env` file with: token, client, (guild optional for guild-only commands)');
+      return;
+    }
+
     if (guildid) {
     // registering unique commands to guild
       try {

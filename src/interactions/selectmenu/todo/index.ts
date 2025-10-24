@@ -12,7 +12,7 @@ export default {
       const channelId = parts[3] ?? interaction.channelId;
       const messageId = parts[4] ?? interaction.message?.id;
       const picked = interaction.values[0];
-      if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
+  if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
       const stateMenu = new StringSelectMenuBuilder()
         .setCustomId(`todo:edit_state_apply:${slug}:${picked}:${channelId}:${messageId}`)
         .setPlaceholder('Choisir nouvel état')
@@ -31,7 +31,7 @@ export default {
       const channelId = parts[4];
       const messageId = parts[5];
       const state = interaction.values[0] as TaskState;
-      if (!slug || !id || !state) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
+  if (!slug || !id || !state) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
       try {
   await updateTaskState(slug, id, state);
 
@@ -68,7 +68,7 @@ export default {
       const channelId = parts[3];
       const messageId = parts[4];
       const picked = Number(interaction.values[0]);
-      if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
+  if (!slug || !picked) return interaction.reply({ content: 'Sélection invalide.', flags: MessageFlags.Ephemeral });
       try {
   await interaction.deferUpdate().catch(() => null);
         await deleteTask(slug, picked);
@@ -99,6 +99,6 @@ export default {
       }
     }
 
-    return interaction.reply({ content: 'Action inconnue.', flags: MessageFlags.Ephemeral });
+  return interaction.reply({ content: 'Action inconnue.', flags: MessageFlags.Ephemeral });
   }
 }

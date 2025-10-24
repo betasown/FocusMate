@@ -24,8 +24,8 @@ const loadEvents = async (client: Client, directory: string) => {
   }
 };
 
-module.exports = (client: Client) => {
+module.exports = async (client: Client) => {
   client.setMaxListeners(20); 
   const eventsDir = join(__dirname, '../events');
-  loadEvents(client, eventsDir).catch(err => console.error('Failed to load events:', err));
+  await loadEvents(client, eventsDir);
 };

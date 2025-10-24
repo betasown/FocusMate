@@ -45,10 +45,10 @@ export default {
 
             if (now < expirationTime) {
                 const expiredTimestamp = Math.round(expirationTime / 1000);
-                return interaction.reply({
-                    content: `Deux petites secondes, j'ai besoin de me recharger pour refaire : \`${command.data.name}\`. Je suis prêt dans <t:${expiredTimestamp}:R>.`,
-                    flags: MessageFlags.Ephemeral,
-                });
+                    return interaction.reply({
+                        content: `Deux petites secondes, j'ai besoin de me recharger pour refaire : \`${command.data.name}\`. Je suis prêt dans <t:${expiredTimestamp}:R>.`,
+                        flags: MessageFlags.Ephemeral,
+                    });
             }
         }
 
@@ -59,10 +59,25 @@ export default {
             await command.execute(interaction);
         } catch (error) {
             console.error(error);
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-            } else {
-                await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+            // Try to respond to the interaction in the safest way depending on state.
+            try {
+                if (interaction.deferred) {
+                    // If we deferred earlier, edit the deferred reply
+                    await interaction.editReply({ content: 'There was an error while executing this command!' });
+                } else if (interaction.replied) {
+                    // If already replied, send a follow-up
+                    await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+                } else {
+                    // No response yet, send initial reply
+                    await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+                }
+            } catch (sendErr: any) {
+                // Ignore errors about double-acknowledgement (40060) or log others.
+                if (sendErr?.code === 40060) {
+                    console.warn('Tried to reply to interaction but it was already acknowledged.');
+                } else {
+                    console.warn('Failed to send error response to interaction:', sendErr?.message ?? sendErr);
+                }
             }
         }
     },
